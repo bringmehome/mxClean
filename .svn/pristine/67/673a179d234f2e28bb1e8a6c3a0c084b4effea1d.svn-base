@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+		<title>title</title>
+		<script type="text/javascript" src="../script/api.js"></script>
+		<script type="text/javascript" src="../script/config.js"></script>
+		<script type="text/javascript" src="../script/jquery-2.1.3.js"></script>
+		<script type="text/javascript" src="../script/av-0.5.0.min.js"></script>
+		<script type="text/javascript" src="../script/mico-ac-0.2.js"></script>
+		<script type="text/javascript" src="../script/jquery.md5.js"></script>
+		<style>
+			body {
+			}
+		</style>
+	</head>
+	<body>
+		<br/>
+		<br/>
+		<br/>
+		<br/>
+		<input type="text" id="wifiSsid" value=""/>
+		<input type="text" id="password" value=""/>
+		<input type="button" onclick="getSSID()" value="获取WIFI名称"/>
+		<input type="button" onclick="startEasyLink()" value="开始配网"/>
+		<input type="button" onclick="stopEasyLink()" value="停止配网"/>
+		<br/>
+		<input type="button" onclick="bindingDev()" value="绑定设备"/>
+		<br/>
+		<input type="text" id="devname" value=""/>
+		<input type="button" onclick="editDevName()" value="修改设备名称"/>
+		<br/>
+		<input type="text" id="owners" value=""/>
+		<input type="button" onclick="authDev()" value="授权设备"/>
+		<br/>
+		<input type="button" onclick="getAuthDevList()" value="获取所有有权限的设备"/>
+		<br/>
+		<input type="button" onclick="queryDevUser()" value="获取设备下的所有用户"/>
+		<br/>
+		<input type="text" id="ones" value="15178849605"/>
+		<input type="button" onclick="deleteOneUser()" value="取消授权"/>
+		<br/>
+		<input type="button" onclick="unBindingDev()" value="解绑设备"/>
+	</body>
+	<script type="text/javascript">
+		apiready = function() {
+		};
+		function getSSID() {
+			$micojs.getssid(function(ret, err) {
+				if (ret)
+					$("#wifiSsid").val(ret);
+			});
+		}
+
+		var devip;
+		function startEasyLink() {
+			var ssid = $("#wifiSsid").val();
+			var psw = $("#password").val();
+			$micojs.startEasyLink(ssid, psw, function(ret, err) {
+				if (ret) {
+					devip = ret;
+					alert("ip = " + ret);
+				}
+			});
+		}
+
+		function stopEasyLink() {
+			$micojs.stopEasyLink();
+		}
+
+		var userToken = $micojs.getUserToken();
+		var bindKey;
+		function bindingDev() {
+			bindKey = $.md5(devip + userToken);
+			alert(bindKey);
+			$micojs.bindingDev(devip, "8001", bindKey, function(ret, err) {
+				alert(JSON.stringify(ret));
+				if (ret) {
+					var devid = ret.device_id;
+					bindtocloud(devid);
+				}
+			});
+		}
+
+		function bindtocloud() {
+			$micojs.bindDevCloud(userToken, bindKey, function(ret, err) {
+				alert(JSON.stringify(ret));
+			});
+		}
+
+		function editDevName() {
+			var devname = $("#devname").val();
+			var devid = "d64f517c/c8934691818b";
+			$micojs.editDevName(userToken, devname, devid, function(ret, err) {
+				alert(JSON.stringify(ret));
+			});
+		}
+
+		function authDev() {
+			var phone = $("#owners").val();
+			var userType = "share";
+			var devid = "d64f517c/c8934691818b";
+			$micojs.authDev(userToken, phone, userType, devid, function(ret, err) {
+				alert(JSON.stringify(ret));
+			});
+		}
+
+		function getAuthDevList() {
+			$micojs.getAuthDevList(userToken, function(ret, err) {
+				alert(JSON.stringify(ret));
+			});
+		}
+
+		function deleteOneUser() {
+			var userID = "82af2473-9766-4d29-9508-ae99f49df5f9";
+			var devid = "d64f517c/c8934691818b";
+			$micojs.removeOneUser(userToken, userID, devid, function(ret, err) {
+				alert(JSON.stringify(ret));
+			});
+		}
+
+		function queryDevUser() {
+			var devid = "d64f517c/c8934691818b";
+			$micojs.queryDevUser(userToken, devid, function(ret, err) {
+				alert(JSON.stringify(ret));
+			});
+		}
+
+		function unBindingDev() {
+			var devid = "d64f517c/c8934691818b";
+			$micojs.unBindingDev(userToken, devid, function(ret, err) {
+				alert(JSON.stringify(ret));
+			});
+		}
+	</script>
+</html>
